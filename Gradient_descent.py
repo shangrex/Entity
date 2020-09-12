@@ -15,17 +15,21 @@ def input_arg():
     parser.add_argument('--bios', type=int, required=True,
                         help="the bios of the line")
 
+    parser.add_argument('--learn', type=int, required=False, default=1,
+                        help="the learning rate of gradient descent")
+
     args = parser.parse_args()
 
     w = args.weight
     b = args.bios
+    lr = args.learn
 
     while (True):
         check = input("input q the quit or input else to continue")
         if(check == "q"):
             break
         draw(w, b)
-        w = gradient_descent(w, b)
+        w = gradient_descent(w, b, lr)
 
 def draw(w, b):
     x = np.linspace(-100, 100, 10000)
@@ -33,15 +37,14 @@ def draw(w, b):
     
     f = plt.figure(w)
     plt.plot(x, y)
-    #plt.text(x= 50, y = 0, s = "weight: {w} height: {b}", fontsize=12)
     plt.title("weight: {w} height: {b}".format(w=str(w), b=str(b)),fontsize=12,color='black')
     f.show()
     
     
-def gradient_descent(w, b):
+def gradient_descent(w, b, lr):
         '''
         loss=(wx'+b-y)^2
-        gradient=
+        gradient= d (wx'+b-y)^2 / dw
         '''
         x = int(input("input new x: "))
         y = int(input("input new y: "))
@@ -50,7 +53,7 @@ def gradient_descent(w, b):
         print("loss",loss)
         gradient = 2*(w*x+b-y)*x
     
-        w = w-gradient
+        w = w-gradient*lr
         print("new wieght :", w)
         return w
 
