@@ -22,8 +22,8 @@ def train(w, b, x, y, epoch, lr):
     print("intitial loss", loss(w,b ,x, y))
     for i in range(epoch):
         #question 2 ?
-        dl_dw = np.sum((w*x+b-y)*x) / len(x)
-        dl_db = np.sum(w*x+b-y) / len(x)
+        dl_dw = np.sum((w*x+b-y)*x)*2 / len(x)
+        dl_db = np.sum(w*x+b-y)*2 / len(x)
         w = w - dl_dw*lr
         b = b - dl_db*lr
         print("{i}-th loss:".format(i=i),loss(w, b, x, y))
