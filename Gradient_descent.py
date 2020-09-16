@@ -29,7 +29,7 @@ def input_arg():
         if(check == "q"):
             break
         draw(w, b)
-        w = gradient_descent(w, b, lr)
+        w, b = gradient_descent(w, b, lr)
 
 def draw(w, b):
     x = np.linspace(-100, 100, 10000)
@@ -51,11 +51,13 @@ def gradient_descent(w, b, lr):
 
         loss =  (w*x+b-y)*(w*x+b-y)
         print("loss",loss)
-        gradient = 2*(w*x+b-y)*x
-    
-        w = w-gradient*lr
+        gradient_w = 2*(w*x+b-y)*x
+        gradient_b = (w*x+b-y)
+        w = w-gradient_w*lr
+        b = b-gradient_b*lr
         print("new wieght :", w)
-        return w
+        print("new bios :", b)
+        return w, b
 
     
 if __name__ == "__main__":
