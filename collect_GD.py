@@ -7,13 +7,13 @@ b = np.random.rand(1)
 x = np.random.rand(100)
 y = 2 * x + 7
 
-epoch = 1000
+epoch = 100000
 lr = 0.001
 
 def loss(w, b, x, y):
     loss = 0
     for i, j in zip(w, b):
-        loss += np.sqrt((w*i+b-j)**2)
+        loss += (w*i+b-j)**2
     return loss/len(x)
 
 
