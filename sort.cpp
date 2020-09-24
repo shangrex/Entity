@@ -7,13 +7,8 @@
 #include <bits/stdc++.h>
 #include <vector>
 using namespace std;
-vector initial_split(FILE * file_in, int block_size, int* count_pages){
-    // //open output temp file
-    // FILE *page[pages];
-    // for(int i = 0; i < pages; i++){
-    //     string y = ("out_temp_" + to_string(i) + ".txt");
-    //     page[i] = fopen(y.c_str(), "w");
-    // }
+
+vector<FILE*> initial_split(FILE * file_in, int block_size, int* count_pages){
     //load to output temp file and sort
     int data;
     int num_data = 0;
@@ -30,27 +25,50 @@ vector initial_split(FILE * file_in, int block_size, int* count_pages){
             }
         }
         sort(arr, arr+i);
-        *count_pages ++ ;
+        cout << (*count_pages) << endl;
+        (*count_pages) ++ ;
         string title = "out_temp_" + to_string(*count_pages) + ".txt";
         pages.resize(*count_pages);
         pages[*count_pages-1] = fopen(title.c_str(), "w");
         for(int j  = 0; j < i; j++){
-            fprintf(pages[*count_pages-1],"%d" ,arr[j]);
-            if(j != i-1)fprintf(pages[*count_pages-1], "\n");
+            fprintf(pages[(*count_pages)-1],"%d" ,arr[j]);
+            if(j != i-1)fprintf(pages[(*count_pages)-1], "\n");
         }
     }
     return pages;
 }
 void merge_file(FILE *file_out, int block_size, int sum_pages, vector<FILE*>pages){
-    priority_queue <int, vector<int>, greater<int> > pq; 
+    //priority_queue <int, vector<int>, greater<int> > pq(block_size); 
     bool check = true;
-    int arr[block_size];
-    int count_pages = 0;
-    while(check){
-        for(int i = 0; i < block_size; i++){
-            fscanf(pages[count_pages], "%d", &arr[i]);
-        }
+    int count_pages = 0; // count the null pages
+    int arr[sum_pages];
+    int standard = 0; //standard to record the min key value
+    int standard_pages; // record the min key index
+    for(int i = 0; i < sum_pages; i++){
+        fscanf(pages[i], "%d", &arr[i]);
     }
+    while(count_pages != sum_pages){
+        standard = arr[0];
+        for(int i = 0; i < sum_pages; i++){ 
+            if(standard < arr[i]){
+                standard = arr[i];
+                standard_pages = i;
+            }
+        }    
+        int tmp;
+        fscanf(pages[standard_pages], "%d", &tmp);
+        if(feof(pages[standard_pages]) != 0){
+            count_pages ++;
+            arr[standard_pages] = INT_MAX;
+        }
+        else fprintf(file_out, "%d\n", tmp);
+    }
+
+    for(int i = 0; i < sum_pages; i++){
+        fclose(pages[i]);
+    }
+    
+
 }
 int main(){
     FILE *file_in;
@@ -59,13 +77,9 @@ int main(){
     file_in = fopen("input.txt", "r");
     file_out = fopen("output.txt", "w");
     int block_size;
-    // int pages, block_size;
-    // cout << "input the # of pages" << endl;
-    // cin >> pages;
-    //block size * pages = total size
     cout << "input the # of data in a block size" << endl;
     cin >> block_size;
-    int count_pages;
+    int count_pages = 0;
     start = clock();
     vector<FILE*>pages;
     if(file_in){
