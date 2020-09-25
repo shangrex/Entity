@@ -7,11 +7,11 @@ using namespace std;
 
 int main(){
     clock_t start, end;
-    cout << "input the # of bilion random number";
+    cout << "input the # of bilion random number(GB)";
     int size;
     cin >> size;
-    //size *= 1000000000;
-    size *= 10000;
+    size *= 100000000;
+    //size *= 10000;
     FILE * file;
     file  = fopen("input.txt", "w");
     start = clock();
