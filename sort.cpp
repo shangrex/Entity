@@ -8,7 +8,7 @@
 #include <vector>
 using namespace std;
 int arr[100000000];
-void initial_split(FILE * file_in, int block_size, int* count_pages, vector<FILE*> *pages){
+void initial_split(FILE * file_in, int block_size, int* count_pages){
     //load to output temp file and sort
     int data;
     int num_data = 0;
@@ -16,6 +16,7 @@ void initial_split(FILE * file_in, int block_size, int* count_pages, vector<FILE
     bool check = true;
     int cc = 0;
     int i ;
+    FILE* file_out;
     while(check){
         //scan the input file in to block
         for(i = 0; i < block_size; i++){
@@ -34,29 +35,34 @@ void initial_split(FILE * file_in, int block_size, int* count_pages, vector<FILE
         (*count_pages) ++ ;
         //store in out_temp file
         string title = "out_temp_" + to_string(*count_pages) + ".txt";
-        (*pages).resize(*count_pages);
-        (*pages)[*count_pages-1] = fopen(title.c_str(), "w+");
-        if((*pages)[*count_pages-1] == NULL){
+        //(*pages).resize(*count_pages);
+        //(*pages)[*count_pages-1] = fopen(title.c_str(), "w+");
+        file_out = fopen(title.c_str(), "w+");
+        if(file_out == NULL){
             cout << "out_temp_" + to_string(*count_pages) + ".txt" << " can not open" << endl;
         }
         else {
             for(int j = 0; j < i; j++){
-                fprintf((*pages)[(*count_pages)-1],"%d" ,arr[j]);
-                if(j != i-1)fprintf((*pages)[(*count_pages)-1], "\n");
+                fprintf(file_out,"%d" ,arr[j]);
+                if(j != i-1)fprintf(file_out, "\n");
                 cc++;
             }
             //cout << "# of fpirntf " << cc << endl; 
             if(check==false)break;
-            //fclose((*pages)[(*count_pages)-1]);
+            fclose(file_out);
         }
     }
     //turn read mode to write mode
-    for(int i = 0; i < (*count_pages); i++)
-        rewind((*pages)[i]);    
+    // for(int i = 0; i < (*count_pages); i++)
+    //     rewind((*pages)[i]);    
 
     cout << "finish initial split" << endl;
 }
-void merge_file(FILE *file_out, int block_size, int sum_pages, vector<FILE*>*pages){
+void merge_file(FILE *file_out, int block_size, int sum_pages){
+    //vector<FILE*>pages(sum_pages+1);
+    int seek[sum_pages];
+    memset(seek, 0, sizeof(seek));
+    FILE *file_in;
     //priority_queue <int, vector<int>, greater<int> > pq(block_size); 
     bool check = true;
     int count_pages = 0; // count the null pages
@@ -67,14 +73,20 @@ void merge_file(FILE *file_out, int block_size, int sum_pages, vector<FILE*>*pag
     memset(check_file, 0, sizeof(check_file));
     //initialize block 
     for(int i = 0; i < sum_pages; i++){
+        string title = "out_temp_" + to_string(i+1) + ".txt";  
+        file_in = fopen(title.c_str(), "r");
+        if(file_in == NULL){
+            cout << title << " not found" << endl;
+        }
         int tmp;
-        fscanf((*pages)[i], "%d", &tmp);
+        fscanf(file_in, "%d", &tmp);
         arr[i] = tmp;
+        seek[i] = ftell(file_in);
+        fclose(file_in);
     }
-    //cout << endl;
+    
     //do selection sort
     while(count_pages != sum_pages){
-        //cout << count_pages << endl;
         standard = arr[0];
         standard_pages = 0;
         //find the min key
@@ -84,25 +96,36 @@ void merge_file(FILE *file_out, int block_size, int sum_pages, vector<FILE*>*pag
                 standard_pages = i;
             }
         }
-        //input the min key index value
-        int tmp;
-        fscanf((*pages)[standard_pages], "%d", &tmp);
-        arr[standard_pages] = tmp;
-  
-        if(feof((*pages)[standard_pages]) != 0 && check_file[standard_pages] == 0){ //the file is empty and count the # of empty file
-            //cout << "out_temp_" << standard_pages << ".txt has been empty." << endl;
-            check_file[standard_pages] = 1;
-            fprintf(file_out, "%d\n", standard);
-        }
-        else if(feof((*pages)[standard_pages]) != 0 && check_file[standard_pages] == 1){
-            fprintf(file_out, "%d\n", standard);
-            arr[standard_pages] = INT_MAX;
-            count_pages++;
+        //open out_temp file to scan
+        string title = "out_temp_" + to_string(standard_pages+1) + ".txt"; 
+
+        file_in = fopen(title.c_str(), "r");
+        if(file_in == NULL){
+            cout << title << " not found" << endl;
         }
         else {
-            fprintf(file_out, "%d\n", standard); //write file
+            //input the min key index value
+            int tmp;
+            fseek(file_in, seek[standard_pages], SEEK_SET);
+            fscanf(file_in, "%d", &tmp);
+            arr[standard_pages] = tmp;
+            seek[standard_pages] = ftell(file_in);
+            if(feof(file_in) != 0 && check_file[standard_pages] == 0){ //the file is empty and count the # of empty file
+                //cout << "out_temp_" << standard_pages << ".txt has been empty." << endl;
+                check_file[standard_pages] = 1;
+                fprintf(file_out, "%d\n", standard);
+            }
+            else if(feof(file_in) != 0 && check_file[standard_pages] == 1){
+                fprintf(file_out, "%d\n", standard);
+                arr[standard_pages] = INT_MAX;
+                count_pages++;
+                cout << "finish # file merge " <<  count_pages << endl;
+            }
+            else {
+                fprintf(file_out, "%d\n", standard); //write file
+            }
+            fclose(file_in);
         }
-        
     }
 
     for(int i = 0; i < sum_pages; i++){
@@ -113,9 +136,10 @@ void merge_file(FILE *file_out, int block_size, int sum_pages, vector<FILE*>*pag
             //cout<< "out_temp_" << to_string(i) <<".txt has been removed."<<endl;
             ;
     }
-    for(int i = 0; i < sum_pages; i++){
-        fclose((*pages)[i]);
-    }
+    fclose(file_out);
+    // for(int i = 0; i < sum_pages; i++){
+    //     fclose((*pages)[i]);
+    // }
     
     cout << "finish merge" << endl;
 }
@@ -133,8 +157,10 @@ int main(){
     start = clock();
     vector<FILE*>pages;
     if(file_in){
-        initial_split(file_in, block_size, &count_pages, &pages);
-        merge_file(file_out , block_size, count_pages, &pages);
+        //initial_split(file_in, block_size, &count_pages, &pages);
+        initial_split(file_in, block_size, &count_pages);
+        //merge_file(file_out , block_size, count_pages, &pages);
+        merge_file(file_out , block_size, count_pages);        
     }
     else{
         cout << "file can not open" << endl;
