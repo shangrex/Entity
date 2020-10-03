@@ -18,7 +18,7 @@ int main(){
     if(file){
         default_random_engine generator;
         uniform_int_distribution<int> distribution(-2147483648 ,2147483647);
-        for(int i = 0;  i < size ; i++){
+        for(long long int i = 0;  i < size ; i++){
             int dice_roll = distribution(generator);
             fprintf(file, "%d", dice_roll);
             if(i != size-1)fprintf(file, "\n");
