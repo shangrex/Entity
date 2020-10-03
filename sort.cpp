@@ -126,9 +126,9 @@ int main(){
     clock_t start, end;
     file_in = fopen("input.txt", "r");
     file_out = fopen("output.txt", "w");
-    int block_size;
+    int block_size = 100000000;
     cout << "input the # of data in a block size" << endl;
-    cin >> block_size;
+    //cin >> block_size;
     int count_pages = 0;
     start = clock();
     vector<FILE*>pages;
@@ -139,6 +139,7 @@ int main(){
     else{
         cout << "file can not open" << endl;
     }
+    end = clock()
     cout << "total execution time " << ((double) (end - start)) / CLOCKS_PER_SEC  << " secs" << endl;
 
     fclose(file_in);
