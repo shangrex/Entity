@@ -8,7 +8,7 @@ using namespace std;
 int main(){
     clock_t start, end;
     cout << "input the # of bilion random number(GB)";
-    int size;
+    long long int size;
     cin >> size;
     size *= 100000000;
     //size *= 10000;

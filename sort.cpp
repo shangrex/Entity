@@ -134,12 +134,14 @@ int main(){
     vector<FILE*>pages;
     if(file_in){
         initial_split(file_in, block_size, &count_pages, &pages);
+        end = clock();
+        cout << "split time " << ((double) (end - start)) / CLOCKS_PER_SEC  << " secs" << endl;
         merge_file(file_out , block_size, count_pages, &pages);
     }
     else{
         cout << "file can not open" << endl;
     }
-    end = clock()
+    end = clock();
     cout << "total execution time " << ((double) (end - start)) / CLOCKS_PER_SEC  << " secs" << endl;
 
     fclose(file_in);
